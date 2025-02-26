@@ -173,6 +173,7 @@ server.post('/login', async(req, res)=>{
       if (isSamePassword) {
         const infoToken = {email : resultUser[0].email, id : resultUser[0].id};
         const token = jwt.sign(infoToken, process.env.PASS, {expiresIn : '1h'});
+
         res.status(200).json({
           success : true,
           token : token
@@ -193,4 +194,55 @@ server.post('/login', async(req, res)=>{
   } catch (error) {
     res.status(500).json(error);
   }
-})
+});
+
+//Verificación token
+const verifyToken = (token) =>{
+  try {
+    const decoded = jwt.verify(token, process.env.PASS);
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+//Autenticación token
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  req.user = decoded;
+  next();
+};
+
+// Ruta protegida
+server.get('/usuario', authenticateToken, async(req, res) => {
+  try {
+    const connection = await connectionDB();
+    const {id} = req.params;
+    const sqlSelect = "SELECT id, email, nombre FROM usuarios_db WHERE id = ?";
+    const [result] = await connection.query(sqlSelect, [id]);
+    connection.end();
+    if(result.length > 0){
+      res.status(200).json({
+        success : true,
+        user : result[0]
+      });
+    }else{
+      res.status(404).json({
+        success : false,
+        message : 'Usuario no encontrado'
+      })
+    }
+    
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+
