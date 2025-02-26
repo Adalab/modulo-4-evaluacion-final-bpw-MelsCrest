@@ -37,7 +37,28 @@ async function connectionDB() {
 
 //ENDPOINTS
 
-
+server.post('/restaurants', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const {name, cousine_style, area, price_range, fk_areas, fk_cousine_style} = req.body;
+    const sqlInsert = 'INSERT INTO restaurant (name, cousine_style, area, price_range, fk_areas, fk_cousine_style) VALUES (?, ?, ?, ?, ?, ?)';
+    const [result] = await connection.query(sqlInsert, [name, cousine_style, area, price_range, fk_areas, fk_cousine_style]);
+    connection.end();
+    if(result){
+      res.status(201).json({
+        success : true,
+        id : result.insertId
+      });
+    }else{
+      res.status(400).json({
+        success : false,
+        message : "No se ha podido guardar el restaurante"
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 
 
