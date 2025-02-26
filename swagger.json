@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Restaurantes API",
+    "title": "API de Restaurantes y Usuarios",
     "version": "1.0.0",
-    "description": "API para la gestión de restaurantes"
+    "description": "API para la gestión de restaurantes y usuarios"
   },
   "servers": [
     {
@@ -14,10 +14,10 @@
   "paths": {
     "/restaurants": {
       "get": {
-        "summary": "Lista todos los restaurantes",
+        "summary": "Obtiene todos los restaurantes",
         "responses": {
           "200": {
-            "description": "Operación exitosa, devuelve todos los restaurantes",
+            "description": "Operación exitosa",
             "content": {
               "application/json": {
                 "schema": {
@@ -36,6 +36,9 @@
           },
           "404": {
             "description": "No se encontraron restaurantes"
+          },
+          "500": {
+            "description": "Error del servidor"
           }
         }
       },
@@ -57,26 +60,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RestauranteCreado"
+                  "$ref": "#/components/schemas/SuccessResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "No se ha podido guardar el restaurante"
+            "description": "No se pudo crear el restaurante"
+          },
+          "500": {
+            "description": "Error del servidor"
           }
         }
       }
     },
     "/restaurants/{id}": {
       "put": {
-        "summary": "Actualiza un restaurante por ID",
+        "summary": "Actualiza los datos de un restaurante",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "ID del restaurante a actualizar",
             "schema": {
               "type": "integer"
             }
@@ -94,24 +99,30 @@
         },
         "responses": {
           "200": {
-            "description": "Restaurante actualizado exitosamente"
+            "description": "Restaurante actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "No se pudieron actualizar los datos"
+            "description": "No se pudo actualizar el restaurante"
           },
-          "404": {
-            "description": "Restaurante no encontrado"
+          "500": {
+            "description": "Error del servidor"
           }
         }
       },
       "delete": {
-        "summary": "Elimina un restaurante por ID",
+        "summary": "Elimina un restaurante",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "ID del restaurante a eliminar",
             "schema": {
               "type": "integer"
             }
@@ -119,13 +130,117 @@
         ],
         "responses": {
           "200": {
-            "description": "Restaurante eliminado exitosamente"
+            "description": "Restaurante eliminado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "No se ha podido eliminar el restaurante"
+            "description": "No se pudo eliminar el restaurante"
+          },
+          "500": {
+            "description": "Error del servidor"
+          }
+        }
+      }
+    },
+    "/registro": {
+      "post": {
+        "summary": "Registra un nuevo usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewUser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error al registrar el usuario"
+          },
+          "500": {
+            "description": "Error del servidor"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Inicia sesión de usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error al iniciar sesión"
+          },
+          "500": {
+            "description": "Error del servidor"
+          }
+        }
+      }
+    },
+    "/usuario": {
+      "get": {
+        "summary": "Obtiene los detalles del usuario autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del usuario obtenidos exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado"
           },
           "404": {
-            "description": "Restaurante no encontrado"
+            "description": "Usuario no encontrado"
+          },
+          "500": {
+            "description": "Error del servidor"
           }
         }
       }
@@ -182,16 +297,73 @@
           }
         }
       },
-      "RestauranteCreado": {
+      "SuccessResponse": {
         "type": "object",
         "properties": {
           "success": {
             "type": "boolean"
           },
-          "id": {
-            "type": "integer"
+          "message": {
+            "type": "string"
           }
         }
+      },
+      "NewUser": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "email": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }
