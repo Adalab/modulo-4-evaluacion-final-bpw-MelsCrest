@@ -107,4 +107,27 @@ server.put('/restaurants/:id', async(req, res)=>{
   }
 });
 
+//Eliminar un restaurante - url params
+server.delete('/restaurants/:id', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const {id} = req.params;
+    const sqlDelete = "DELETE FROM restaurant WHERE idrestaurant = ?";
+    const [result] = await connection.query(sqlDelete, [id]);
+    connection.end();
+    if (result.affectedRows > 0) {
+      res.status(200).json({
+        success : true
+      });
+    } else {
+      res.status(400).json({
+        success : false,
+        message : "No se ha podido eliminar el restaurante"
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 
