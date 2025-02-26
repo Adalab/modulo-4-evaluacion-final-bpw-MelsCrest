@@ -9,29 +9,30 @@ const server = express();
 //CONFIGURAR SERVIDOR 
 server.use(cors());
 server.use(express.json());
+require("dotenv").config();
 
 //PUERTO 
-const PORT = 5001; 
+const PORT = process.env.PORT; 
 server.listen(PORT, ()=>{
   console.log(`Servidor corriendo por http://localhost:${PORT}`);
 });
 
 //CONEXION A LA BASE DE DATOS MSQL2
-// async function getConnection() {
-//   const connection = await mysql.createConnection({
-//     host: 'localhost',
-//     database: '',
-//     user: 'root',
-//     password: '',
-//   });
-//   await connection.connect();
+async function connectionDB() {
+  const connection = await mysql.createConnection({
+    host: process.env.HOSTDB,
+    user: process.env.USERDB,
+    password: process.env.PASSDB,
+    database: process.env.DATABASE
+  });
+  await connection.connect();
 
-//   console.log(
-//     `Conexión establecida con la base de datos (identificador=${connection.threadId})`
-//   );
+  console.log(
+    `Conexión establecida con la base de datos (identificador=${connection.threadId})`
+  );
 
-//   return connection;
-// }
+  return connection;
+}
 
 
 //ENDPOINTS
