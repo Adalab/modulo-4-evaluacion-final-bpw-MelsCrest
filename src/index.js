@@ -196,35 +196,34 @@ server.post('/login', async(req, res)=>{
   }
 });
 
-//Verificación token
-const verifyToken = (token) =>{
-  try {
-    const decoded = jwt.verify(token, process.env.PASS);
-    return decoded;
-  } catch (error) {
-    return null;
+//Autenticación y verificación token
+function authenticateToken(req, res, next){
+  const tokenString = req.headers.authorization;
+  if (!tokenString) {
+    res.status(400).json({ 
+      success : false,
+      error: 'Token no proporcionado' 
+    });
+  }else{
+    try{
+      const token = tokenString.split(' ')[1];
+      const verifyToken = jwt.verify(token, process.env.PASS);
+      req.data = verifyToken;
+    }catch(error){
+      res.status(400).json({
+        success : false,
+        message : error
+      });
+    }
+    next();
   }
-}
-
-//Autenticación token
-const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
-  }
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-  req.user = decoded;
-  next();
 };
 
 // Ruta protegida
 server.get('/usuario', authenticateToken, async(req, res) => {
   try {
     const connection = await connectionDB();
-    const {id} = req.params;
+    const {id} = req.data;
     const sqlSelect = "SELECT id, email, nombre FROM usuarios_db WHERE id = ?";
     const [result] = await connection.query(sqlSelect, [id]);
     connection.end();
@@ -239,10 +238,8 @@ server.get('/usuario', authenticateToken, async(req, res) => {
         message : 'Usuario no encontrado'
       })
     }
-    
   } catch (error) {
     res.status(500).json(error);
   }
 });
-
 
