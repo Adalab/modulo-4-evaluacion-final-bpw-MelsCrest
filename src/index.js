@@ -2,6 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require('mysql2/promise');
+const jwt = require('jsonwebtoken');    
+const bcrypt = require("bcrypt");
 
 //CREAR SERVIDOR 
 const server = express();
@@ -130,4 +132,30 @@ server.delete('/restaurants/:id', async(req, res)=>{
   }
 });
 
+//Registrar un usuario
+server.post('/register', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const {email, password} = req.body;
+    const sqlSelectEmail = "SELECT email FROM usuarios_db WHERE email = ?";
+    const [emailResult] = await connection.query(sqlSelectEmail, [email]);
+    if (emailResult.length === 0) {
+      const passHashed = await bcrypt.hash(password, 10);
+      const sqlInsertUser = "INSERT INTO usuarios_db (email, password) VALUES (?, ?)";
+      const [result] = await connection.query(sqlInsertUser, [email, passHashed]);
+      res.status(201).json({
+        success : true,
+        id: result.insertId
+      });
+    } else {
+      res.status(200).json({
+        success : false,
+        message : 'El usuario ya existe'
+      });
+    }  
+    connection.end();
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
