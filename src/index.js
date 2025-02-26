@@ -133,16 +133,16 @@ server.delete('/restaurants/:id', async(req, res)=>{
 });
 
 //Registrar un usuario
-server.post('/register', async(req, res)=>{
+server.post('/registro', async(req, res)=>{
   try {
     const connection = await connectionDB();
-    const {email, password} = req.body;
+    const {email, nombre, password} = req.body;
     const sqlSelectEmail = "SELECT email FROM usuarios_db WHERE email = ?";
     const [emailResult] = await connection.query(sqlSelectEmail, [email]);
     if (emailResult.length === 0) {
       const passHashed = await bcrypt.hash(password, 10);
-      const sqlInsertUser = "INSERT INTO usuarios_db (email, password) VALUES (?, ?)";
-      const [result] = await connection.query(sqlInsertUser, [email, passHashed]);
+      const sqlInsertUser = "INSERT INTO usuarios_db (email, nombre, password) VALUES (?, ?, ?)";
+      const [result] = await connection.query(sqlInsertUser, [email, nombre, passHashed]);
       res.status(201).json({
         success : true,
         id: result.insertId
@@ -150,7 +150,7 @@ server.post('/register', async(req, res)=>{
     } else {
       res.status(200).json({
         success : false,
-        message : 'El usuario ya existe'
+        error : 'Error. El usuario ya existe'
       });
     }  
     connection.end();
@@ -159,3 +159,38 @@ server.post('/register', async(req, res)=>{
   }
 });
 
+//Inicio de sesión
+server.post('/login', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const {email, password} = req.body;
+    const sqlSelectEmail = "SELECT * FROM usuarios_db WHERE email = ?";
+    const [resultUser] = await connection.query(sqlSelectEmail, [email]);
+    connection.end();
+    if (resultUser.length !== 0) {
+      const passDB = resultUser[0].password;
+      const isSamePassword = await bcrypt.compare(password, passDB);
+      if (isSamePassword) {
+        const infoToken = {email : resultUser[0].email, id : resultUser[0].id};
+        const token = jwt.sign(infoToken, process.env.PASS, {expiresIn : '1h'});
+        res.status(200).json({
+          success : true,
+          token : token
+        });
+      } else {
+        res.status(200).json({
+          success : false,
+          message : 'Contraseña incorrecta'
+        })
+      }
+      
+    } else {
+      res.status(200).json({
+        success : false, 
+        message : 'Email incorrecto'});
+    }
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
+})
