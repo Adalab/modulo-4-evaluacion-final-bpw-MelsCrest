@@ -83,4 +83,28 @@ server.get('/restaurants', async(req, res)=>{
   }
 });
 
+//Actualizar un restaurante - url params
+server.put('/restaurants/:id', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const {id} = req.params;
+    const {name, cousine_style, area, price_range, fk_areas, fk_cousine_style} = req.body;
+    const sqlUpdate = "UPDATE restaurant SET name = ?, cousine_style = ?, area = ?, price_range = ?, fk_areas = ?, fk_cousine_style = ? WHERE idrestaurant = ?";
+    const [result] = await connection.query(sqlUpdate, [name, cousine_style, area, price_range, fk_areas, fk_cousine_style, id]);
+    connection.end();
+    if (result.affectedRows > 0) {
+      res.status(200).json({
+        success : true
+      });      
+    } else {
+      res.status(400).json({
+        success : false,
+        message : "No se han podido actualizar los datos"
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 
