@@ -1,0 +1,198 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Restaurantes API",
+    "version": "1.0.0",
+    "description": "API para la gestión de restaurantes"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5001",
+      "description": "Servidor de desarrollo"
+    }
+  ],
+  "paths": {
+    "/restaurants": {
+      "get": {
+        "summary": "Lista todos los restaurantes",
+        "responses": {
+          "200": {
+            "description": "Operación exitosa, devuelve todos los restaurantes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Restaurant"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No se encontraron restaurantes"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo restaurante",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRestaurant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Restaurante creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestauranteCreado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No se ha podido guardar el restaurante"
+          }
+        }
+      }
+    },
+    "/restaurants/{id}": {
+      "put": {
+        "summary": "Actualiza un restaurante por ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del restaurante a actualizar",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRestaurant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Restaurante actualizado exitosamente"
+          },
+          "400": {
+            "description": "No se pudieron actualizar los datos"
+          },
+          "404": {
+            "description": "Restaurante no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un restaurante por ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del restaurante a eliminar",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurante eliminado exitosamente"
+          },
+          "400": {
+            "description": "No se ha podido eliminar el restaurante"
+          },
+          "404": {
+            "description": "Restaurante no encontrado"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Restaurant": {
+        "type": "object",
+        "properties": {
+          "idrestaurant": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "cousine_style": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "price_range": {
+            "type": "integer"
+          },
+          "fk_areas": {
+            "type": "integer"
+          },
+          "fk_cousine_style": {
+            "type": "integer"
+          }
+        }
+      },
+      "NewRestaurant": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "cousine_style": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "price_range": {
+            "type": "integer"
+          },
+          "fk_areas": {
+            "type": "integer"
+          },
+          "fk_cousine_style": {
+            "type": "integer"
+          }
+        }
+      },
+      "RestauranteCreado": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
