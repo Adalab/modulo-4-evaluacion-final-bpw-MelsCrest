@@ -36,12 +36,12 @@ async function connectionDB() {
 
 
 //ENDPOINTS
-
+//añadir un restaurante - body params
 server.post('/restaurants', async(req, res)=>{
   try {
     const connection = await connectionDB();
     const {name, cousine_style, area, price_range, fk_areas, fk_cousine_style} = req.body;
-    const sqlInsert = 'INSERT INTO restaurant (name, cousine_style, area, price_range, fk_areas, fk_cousine_style) VALUES (?, ?, ?, ?, ?, ?)';
+    const sqlInsert = "INSERT INTO restaurant (name, cousine_style, area, price_range, fk_areas, fk_cousine_style) VALUES (?, ?, ?, ?, ?, ?)";
     const [result] = await connection.query(sqlInsert, [name, cousine_style, area, price_range, fk_areas, fk_cousine_style]);
     connection.end();
     if(result){
@@ -60,6 +60,27 @@ server.post('/restaurants', async(req, res)=>{
   }
 });
 
+//Mostrar todos los restaurantes - body params
+server.get('/restaurants', async(req, res)=>{
+  try {
+    const connection = await connectionDB();
+    const sqlSelect = "SELECT * FROM restaurant";
+    const [result] = await connection.query(sqlSelect);
+    connection.end();
 
+    if(result){
+      res.status(200).json({
+        result : result
+      })
+    }else{
+      res.status(404).json({
+        success : false,
+        message : "No se han encontrado restaurantes"
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 
